@@ -1,6 +1,6 @@
 package it.polito.tdp.imdb.model;
 
-public class Director {
+public class Director implements Comparable<Director>{
 	Integer id;
 	String firstName;
 	String lastName;
@@ -10,6 +10,11 @@ public class Director {
 		this.id = id;
 		this.firstName = firstName;
 		this.lastName = lastName;
+	}
+	
+	@Override
+	public int compareTo(Director other) {
+		return this.id-other.id;
 	}
 
 	public Integer getId() {

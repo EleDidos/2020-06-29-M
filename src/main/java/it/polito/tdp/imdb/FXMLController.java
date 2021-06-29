@@ -5,9 +5,12 @@
 package it.polito.tdp.imdb;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
+import it.polito.tdp.imdb.model.Director;
 import it.polito.tdp.imdb.model.Model;
+import it.polito.tdp.imdb.model.Vicino;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -35,10 +38,10 @@ public class FXMLController {
     private Button btnCercaAffini; // Value injected by FXMLLoader
 
     @FXML // fx:id="boxAnno"
-    private ComboBox<?> boxAnno; // Value injected by FXMLLoader
+    private ComboBox<Integer> boxAnno; // Value injected by FXMLLoader
 
     @FXML // fx:id="boxRegista"
-    private ComboBox<?> boxRegista; // Value injected by FXMLLoader
+    private ComboBox<Director> boxRegista; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtAttoriCondivisi"
     private TextField txtAttoriCondivisi; // Value injected by FXMLLoader
@@ -48,16 +51,84 @@ public class FXMLController {
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
+    	
+    	txtResult.clear();
+    	Integer n=0;
+    	
+    	try {
+    		n=boxAnno.getValue();
+    		if(n==null) {
+    			txtResult.setText("Inserisci un numero intero di ...");
+    			return;
+    		}
+    	}catch(NumberFormatException nfe) {
+    		txtResult.setText("Inserisci un numero intero di ...");
+    		return;
+    	}catch(NullPointerException npe) {
+    		txtResult.setText("Inserisci un numero intero di ...");
+    		return;
+    	}
+    	
+    	model.creaGrafo(n);
+    	txtResult.appendText("Caratteristiche del grafo:\n#VERTICI = "+model.getNVertici()+"\n#ARCHI = "+model.getNArchi());
+    	
+    	boxRegista.getItems().addAll(model.getVertici());
 
     }
+    
+    Director scelto;
 
     @FXML
     void doRegistiAdiacenti(ActionEvent event) {
+    	if(model.getGraph()==null) {
+    		txtResult.setText("Devi prima creare il grafo!");
+    		return;
+    	}
+    	
+    	
+    	try {
+    		scelto=boxRegista.getValue();
+    		
+    		if(scelto==null) {
+    			txtResult.setText("Scegli un regista");
+    			return;
+    		}
+    	}catch(NullPointerException npe) {
+    		txtResult.setText("Scegli un regista");
+    		return;
+    	}
+    	txtResult.appendText("\n\nI registi adiacenti a quello scelto sono:\n");
+    	for(Vicino v: model.listVicini(scelto)) {
+    		txtResult.appendText(v+"\n");
+    	}
 
     }
 
     @FXML
     void doRicorsione(ActionEvent event) {
+    	if(model.getGraph()==null) {
+    		txtResult.setText("Devi prima creare il grafo!");
+    		return;
+    	}
+    	
+    	Integer c=0;
+    	
+    	try {
+    		c=Integer.parseInt(txtAttoriCondivisi.getText());
+    		
+    	}catch(NumberFormatException nfe) {
+    		txtResult.setText("Inserisci un numero intero corrispondente al n° max di attori condivisi");
+    		return;
+    	}catch(NullPointerException npe) {
+    		txtResult.setText("Inserisci un numero intero corrispondente al n° max di attori condivisi");
+    		return;
+    	}
+    	
+    	List <Director> best = model.trovaPercorso(scelto,c);
+    	txtResult.appendText("\n\nIl percorso con lunghezza massima ha peso = "+model.getPesoMAX()+" e coinvolge i seguenti registi:\n");
+    	for(Director d:best) {
+    		txtResult.appendText(d+"\n");
+    	}
 
     }
 
@@ -76,6 +147,8 @@ public class FXMLController {
    public void setModel(Model model) {
     	
     	this.model = model;
+    	Integer [] anni = {2004,2005,2006};
+    	boxAnno.getItems().addAll(anni);
     	
     }
     
